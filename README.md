@@ -7,7 +7,7 @@ Guia rápido para usar este projeto na prova.
 ## 1. CLONAR O PROJETO
 
 ```bash
-git clone SEU_REPOSITORIO
+git clone https://github.com/eduardo-gms/crud-workspace.git
 cd crud-workspace
 ```
 ## 2. INSTALAR DEPENDÊNCIAS
