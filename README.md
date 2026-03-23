@@ -40,19 +40,36 @@ prisma/schema.prisma
 ```
 Exemplo:
 ```bash
-model Author {
-  id    Int    @id @default(autoincrement())
-  name  String
-  posts Post[]
+model Doctor {
+  id Int @id @default(autoincrement())
+  name String
+  crm String @unique
+  idClinic Int
+  doctorProfile DoctorProfile?
+  patients Patient[]
+  clinic Clinic @relation(fields: [idClinic], references: [id])
 }
 
-model Post {
-  id       Int    @id @default(autoincrement())
-  title    String
-  content  String
+model DoctorProfile {
+  id Int @id @default(autoincrement())
+  specialty String
+  consultationFee Float
+  idDoctor Int @unique
+  doctor Doctor @relation(fields: [idDoctor], references: [id])
+}
 
-  authorId Int
-  author   Author @relation(fields: [authorId], references: [id])
+model Clinic {
+  id Int @id @default(autoincrement())
+  name String
+  address String
+  doctors Doctor[]
+}
+
+model Patient {
+  id Int @id @default(autoincrement())
+  name String
+  cpf String @unique
+  doctors Doctor[]
 }
 ```
 
@@ -63,8 +80,9 @@ npx prisma migrate dev --name nome-da-migracao
 
 3. Gerar CRUD
 ```bash
-nest g resource authors
-nest g resource posts
+nest g resource doctors
+nest g resource patients
+nest g resource clinics
 ```
 
  Escolher:
@@ -73,16 +91,10 @@ REST API
 Yes
 ```
 
-4. Conectar Prisma nos módulos
-
-Em authors.module.ts e posts.module.ts:
-
-imports: [PrismaModule]
-
-5. Usar Prisma no Service
+4. Usar Prisma no Service
 constructor(private prisma: PrismaService) {}
 
-6. CRUD básico (exemplo)
+5. CRUD básico (exemplo)
 
 CREATE
 ```bash
@@ -123,28 +135,3 @@ remove(id: number) {
   });
 }
 ```
- 8. ERROS COMUNS (E SOLUÇÕES)
- PrismaService não encontrado
-
-✔ Importar PrismaModule no módulo
-
- "data não existe"
-
-✔ Usar DTO corretamente:
-
-create(createDto: CreateDto)
- ValidationPipe não encontrado
-
- Importar:
-
-import { ValidationPipe } from '@nestjs/common';
- Swagger não encontrado
-
-✔ Instalar:
-
-npm install @nestjs/swagger
- Relacionamento não funciona
-
-✔ Usar:
-
-connect: { id: ... }
