@@ -4,35 +4,20 @@ Guia rápido para usar este projeto na prova.
 
 ---
 
-## 1. CLONAR O PROJETO
+## (PASSO A PASSO)
+1. CLONAR O PROJETO
 
 ```bash
 git clone https://github.com/eduardo-gms/crud-workspace.git
 cd crud-workspace
 ```
-## 2. INSTALAR DEPENDÊNCIAS
+
+2. INSTALAR DEPENDÊNCIAS
 ```bash
 npm install
 ```
-## 3. CONFIGURAR BANCO (PRISMA)
-```bash
-npx prisma migrate dev
-```
 
- Isso vai:
-
-criar o banco SQLite (dev.db)
-gerar o Prisma Client
-
-## 4. RODAR O PROJETO
-```bash
-npm run start:dev
-```
-
-Acesse: http://localhost:3000/api
-
-## 5. (PASSO A PASSO)
-1. Criar entidades no Prisma
+3. Criar entidades no Prisma
 
 Editar:
 ```bash
@@ -73,12 +58,12 @@ model Patient {
 }
 ```
 
-2. Rodar migrate
+4. Rodar migrate
 ```bash
 npx prisma migrate dev --name nome-da-migracao
 ```
 
-3. Gerar CRUD
+5. Gerar CRUD
 ```bash
 nest g resource doctors
 nest g resource patients
@@ -91,47 +76,89 @@ REST API
 Yes
 ```
 
-4. Usar Prisma no Service
+6. Usar Prisma no Service
+```bash
+import { PrismaService } from '../prisma/prisma.service';
 constructor(private prisma: PrismaService) {}
+```
+6. AJUSTAR OS DTOs (Data Transfer Objects)
 
-5. CRUD básico (exemplo)
+Após gerar o recurso no passo anterior, os arquivos dentro da pasta `dto` estarão vazios. É **obrigatório** definir quais dados a sua API vai receber do usuário, baseando-se no que foi definido no `schema.prisma`.
+
+Exemplo com a entidade Clinic:
+
+Editar arquivo: `src/clinics/dto/create-clinic.dto.ts`
+```
+export class CreateClinicDto {
+  name: string;
+  address: string;
+}
+```
+Editar arquivo: `src/clinics/dto/update-clinic.dto.ts`
+```
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateClinicDto } from './create-clinic.dto';
+
+// O PartialType já transforma name e address em atributos opcionais
+export class UpdateClinicDto extends PartialType(CreateClinicDto) {}
+```
+
+7. CRUD básico (exemplo)
+Abra o arquivo `src/clinics/clinics.service.ts` e adapte os métodos:
 
 CREATE
-```bash
-create(createDto: any) {
-  return this.prisma.post.create({
+```
+CREATE (Criar Clínica)**
+```typescript
+create(createClinicDto: any) {
+  return this.prisma.clinic.create({
     data: {
-      title: createDto.title,
-      content: createDto.content,
-      author: {
-        connect: { id: createDto.authorId },
-      },
+      name: createClinicDto.name,
+      address: createClinicDto.address,
     },
   });
 }
 ```
 READ
-```bash
+```
 findAll() {
-  return this.prisma.post.findMany({
-    include: { author: true },
+  return this.prisma.clinic.findMany({
+    // O 'include' faz o JOIN com a tabela de médicos
+    include: { 
+      doctors: true 
+    },
+  });
+}
+findOne(id: number) {
+  return this.prisma.clinic.findUnique({
+    where: { id },
+    include: { doctors: true },
   });
 }
 ```
 UPDATE
-```bash
-update(id: number, data: any) {
-  return this.prisma.post.update({
+```
+update(id: number, updateClinicDto: any) {
+  return this.prisma.clinic.update({
     where: { id },
-    data,
+    data: {
+      name: updateClinicDto.name,
+      address: updateClinicDto.address,
+    },
   });
 }
 ```
 DELETE
-```bash
+```
 remove(id: number) {
-  return this.prisma.post.delete({
+  return this.prisma.clinic.delete({
     where: { id },
   });
 }
 ```
+8. RODAR O PROJETO
+```
+npm run start:dev
+```
+
+Acesse: http://localhost:3000/api
