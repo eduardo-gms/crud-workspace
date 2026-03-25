@@ -8,8 +8,12 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   
   const config = new DocumentBuilder()
-  .setTitle('CRUD API')
-  .build();
+    .setTitle('CRUD API')
+    .setDescription('API CRUD com NestJS e Prisma')
+    .addTag('users')
+    .addTag('address')
+    .addTag('profiles')
+    .build();
   
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
